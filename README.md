@@ -15,4 +15,5 @@ Usage:
  7. Ctrl+C can be used to kill a foreground process running on shell
  8. Ctrl+Z can be used to send a foreground process to background and stops it
  9. bg %n can be used to start a stopped process in the background, where n is the job number
+
 10. fg %n can be used to bring a background process to foreground, where n is the job number
