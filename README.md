@@ -2,6 +2,7 @@
 
 List of built-in commands:
 cd, help, history, exit, jobs, kill, bg and fg
+
 Usage:
  1. cd: cd <path to directory(absolute/relative)>(changes current directory to the one specified)
  2. help: help(shows the shell's manual)
