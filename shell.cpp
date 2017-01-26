@@ -21,6 +21,7 @@ struct job {
 
 pid_t fgProcess = 0;
 int toBg = 0;
+int pipe_ints[2];
 
 void sigint_handler(int s) {
     //cout << "Signal received." << endl;
@@ -37,7 +38,7 @@ void sigtstp_handler(int s) {
     return;
 }
 
-void execute(vector<string> tokens);
+void execute(vector<string> tokens, int pipeFlag);
 
 vector <job> jobs;
 
@@ -119,7 +120,7 @@ void historyCmd(vector<string> tokens) {
     return;
 }
 
-void launch(vector<string> tokens) {
+void launch(vector<string> tokens, int pipeFlag) {
     pid_t pid, w_pid;
     FILE *inFile;
     FILE *outFile;
@@ -178,6 +179,15 @@ void launch(vector<string> tokens) {
             dup2(fileno(inFile), 0);
         if (gFlag)
             dup2(fileno(outFile), 1);
+        if (pipeFlag == 0) {
+            close(1);
+            close(pipe_ints[0]);
+            dup2(pipe_ints[1], 1);
+        } else if (pipeFlag == 1) {
+            close(0);
+            close(pipe_ints[1]);
+            dup2(pipe_ints[0], 0);
+        }
         execvp(argv[0], (char**) argv);
         cout << "Invalid Command." << endl;
         exit(EXIT_FAILURE);
@@ -223,7 +233,7 @@ void launch(vector<string> tokens) {
     return;
 }
 
-void execute(vector<string> tokens) {
+void execute(vector<string> tokens, int pipeFlag) {
     if (tokens[0] == "cd")
         cdCmd(tokens);
     else if (tokens[0] == "help")
@@ -240,9 +250,9 @@ void execute(vector<string> tokens) {
             return;
         }
         if (index > 0)
-            execute(split(history[index - 1], ' '));
+            execute(split(history[index - 1], ' '), pipeFlag);
         else if (index < 0)
-            execute(split(history[history.size() + index], ' '));
+            execute(split(history[history.size() + index], ' '), pipeFlag);
         else if (index == 0) {
             cout << "Event not found." << endl;
             return;
@@ -342,7 +352,7 @@ void execute(vector<string> tokens) {
             } while (w_pid == 0);
         }
     } else
-        launch(tokens);
+        launch(tokens, pipeFlag);
     return;
 }
 
@@ -357,8 +367,19 @@ void shellLoop() {
         cout << path;
         getline(cin, command);
         pid_t pid = waitpid(pid, &status, WNOHANG);
-        tokens = split(command, ' ');
-        execute(tokens);
+        pipe(pipe_ints);
+        tokens = split(command, '|');
+        if (tokens.size() > 1) {
+            vector<string> tokensCmd1 = split(tokens[0], ' ');
+            execute(tokensCmd1, 0);
+            vector<string> tokensCmd2 = split(tokens[1], ' ');
+            execute(tokensCmd2, 1);
+            tokensCmd1.clear();
+            tokensCmd2.clear();
+        } else {
+            tokens = split(tokens[0], ' ');
+            execute(tokens, -1);
+        }
         if (pid > 0) {
             //cout << "Process with PID " << pid << " has been terminated." << endl;
             int j = 0;
@@ -372,9 +393,9 @@ void shellLoop() {
                 }
             }
         }
-        tokens.clear();
         command.clear();
         path.clear();
+        tokens.clear();
         path = get_current_dir_name();
         path.append(">");
     }
