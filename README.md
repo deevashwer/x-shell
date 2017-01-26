@@ -26,3 +26,5 @@ Ctrl+Z can be used to send a foreground process to background and stops it
 bg %n can be used to start a stopped process in the background, where n is the job number
 
 fg %n can be used to bring a background process to foreground, where n is the job number
+
+command_1 | command_2 can be used to pipe the output of first process as the input of the second one
