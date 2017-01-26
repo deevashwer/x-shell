@@ -136,7 +136,10 @@ void launch(vector<string> tokens, int pipeFlag) {
         command.append(" ");
         //else if (regex_match(tokens[i], regex("!(\\+|-)?[[:digit:]]+"))) {
     }
-    history.push_back(command);
+    if (pipeFlag == -1 || pipeFlag == 0)
+        history.push_back(command);
+    if (pipeFlag == 1)
+        history[history.size() - 1].append("| " + command);
     if (lFlag) {
         inFile = fopen(tokens[lFlag + 1].c_str(), "r");
         if (!inFile) {
@@ -375,6 +378,7 @@ void shellLoop() {
             execute(tokensCmd1, 0);
             vector<string> tokensCmd2 = split(tokens[1], ' ');
             execute(tokensCmd2, 1);
+            //history.push_back(command);
             tokensCmd1.clear();
             tokensCmd2.clear();
         } else {
