@@ -1,3 +1,5 @@
+// This code is bad and you should feel bad
+
 #include <cstdlib> //<stdlib.h> for c++, malloc(), realloc(), free(), exit(), execvp(), EXIT_SUCCESS, EXIT_FAILURE
 #include <unistd.h> //for chdir(), fork(), exec(), pid_t
 #include <cstdio> //<stdio.h> for c++, for fprintf(), printf(), stderr, getchar() etc.
